@@ -115,18 +115,18 @@ export async function DELETE(
 
     const { id } = await params
     const body = await request.json()
-    const { memberId } = body
+    const { team, name } = body
 
-    if (!memberId) {
+    if (!team || !name) {
       return Response.json(
-        { error: 'memberId e obrigatorio' },
+        { error: 'team e name sao obrigatorios' },
         { status: 400 }
       )
     }
 
     await queryD1(
-      'DELETE FROM team_members WHERE id = ? AND stand_id = ?',
-      [String(memberId), id]
+      'DELETE FROM team_members WHERE id = (SELECT id FROM team_members WHERE stand_id = ? AND team = ? AND name = ? LIMIT 1)',
+      [id, team, name]
     )
 
     return Response.json({ success: true })

@@ -33,6 +33,7 @@ import {
   FolderOpen,
   BarChart3,
   Pencil,
+  Trash2,
 } from "lucide-react";
 
 interface StandModalProps {
@@ -99,6 +100,17 @@ export function StandModal({ standId, onClose }: StandModalProps) {
     if (readOnly || !stand) return;
     setLabelValue(stand.label);
     setEditingLabel(true);
+  }
+
+  async function handleClearStand() {
+    if (!standId) return;
+    if (!confirm("Tem certeza que deseja limpar todos os dados deste stand? Esta acao nao pode ser desfeita.")) return;
+
+    await fetch(`/api/stands/${standId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    await refresh();
   }
 
   function getProgressColor() {
@@ -179,6 +191,15 @@ export function StandModal({ standId, onClose }: StandModalProps) {
                   <span className="text-[10px] text-triart-gray">
                     Atualizado por {stand.updatedBy}
                   </span>
+                )}
+                {!readOnly && !loading && (
+                  <button
+                    onClick={handleClearStand}
+                    className="ml-auto text-triart-gray hover:text-red-500 transition-apple"
+                    title="Limpar todos os dados do stand"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
             </div>

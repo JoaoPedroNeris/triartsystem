@@ -2,40 +2,7 @@ import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { queryD1, queryD1Batch } from '@/lib/cloudflare/d1'
 import { getAuthFromCookies } from '@/lib/auth'
-
-const DEFAULT_ITEMS: Record<string, string[]> = {
-  eletrica: [
-    'Passagem de cabos',
-    'Instalacao de tomadas',
-    'Instalacao de iluminacao',
-    'Quadro eletrico',
-    'Teste de carga',
-    'Aterramento',
-  ],
-  marcenaria: [
-    'Montagem da estrutura',
-    'Paineis e divisorias',
-    'Balcoes e vitrines',
-    'Prateleiras',
-    'Acabamento e pintura',
-    'Instalacao de portas',
-  ],
-  tapecaria: [
-    'Forramento de paredes',
-    'Forramento de balcoes',
-    'Carpete / piso',
-    'Cortinas e tecidos',
-    'Acabamento final',
-  ],
-  comunicacaoVisual: [
-    'Testeira / fachada',
-    'Adesivos e plotagens',
-    'Banners e paineis',
-    'Sinalizacao interna',
-    'Totem / display',
-    'Iluminacao decorativa',
-  ],
-}
+import { DEFAULT_CHECKLIST_ITEMS } from '@/data/defaultChecklist'
 
 export async function GET(
   request: NextRequest,
@@ -61,7 +28,7 @@ export async function GET(
     if (items.length === 0) {
       const statements: { sql: string; params: string[] }[] = []
 
-      for (const [category, labels] of Object.entries(DEFAULT_ITEMS)) {
+      for (const [category, labels] of Object.entries(DEFAULT_CHECKLIST_ITEMS)) {
         for (const label of labels) {
           statements.push({
             sql: 'INSERT INTO checklist_items (stand_id, category, label, checked) VALUES (?, ?, ?, 0)',

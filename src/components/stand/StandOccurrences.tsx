@@ -60,7 +60,7 @@ export function StandOccurrences({ standId, occurrences, readOnly, onRefresh }: 
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ id: occurrenceId, status: "resolvida" }),
+      body: JSON.stringify({ occurrenceId, resolved: true }),
     });
     await onRefresh();
   }

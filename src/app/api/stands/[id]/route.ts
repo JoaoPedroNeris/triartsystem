@@ -1,7 +1,10 @@
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import { queryD1 } from '@/lib/cloudflare/d1'
+import { queryD1, queryD1Batch } from '@/lib/cloudflare/d1'
 import { getAuthFromCookies } from '@/lib/auth'
+import { DEFAULT_CHECKLIST_ITEMS } from '@/data/defaultChecklist'
+
+type ChecklistRow = { id: number; category: string; label: string; checked: number; checked_at: string | null; checked_by: string | null }
 
 export async function GET(
   request: NextRequest,
@@ -29,12 +32,33 @@ export async function GET(
 
     const stand = stands[0]
 
-    const [checklistItems, materials, teamMembers, occurrences, photos, files, driveLinks] =
+    // Fetch checklist with lazy initialization
+    let checklistItems = await queryD1<ChecklistRow>(
+      'SELECT id, category, label, checked, checked_at, checked_by FROM checklist_items WHERE stand_id = ? ORDER BY id',
+      [standId]
+    )
+
+    if (checklistItems.length === 0) {
+      const statements: { sql: string; params: string[] }[] = []
+      for (const [category, labels] of Object.entries(DEFAULT_CHECKLIST_ITEMS)) {
+        for (const label of labels) {
+          statements.push({
+            sql: 'INSERT INTO checklist_items (stand_id, category, label, checked) VALUES (?, ?, ?, 0)',
+            params: [standId, category, label],
+          })
+        }
+      }
+      await queryD1Batch(statements)
+
+      checklistItems = await queryD1<ChecklistRow>(
+        'SELECT id, category, label, checked, checked_at, checked_by FROM checklist_items WHERE stand_id = ? ORDER BY id',
+        [standId]
+      )
+    }
+
+    // Fetch remaining data in parallel
+    const [materials, teamMembers, occurrences, photos, files, driveLinks] =
       await Promise.all([
-        queryD1<{ id: number; category: string; label: string; checked: number; checked_at: string | null; checked_by: string | null }>(
-          'SELECT id, category, label, checked, checked_at, checked_by FROM checklist_items WHERE stand_id = ? ORDER BY id',
-          [standId]
-        ),
         queryD1<{ id: number; name: string; quantity: number; confirmed: number; confirmed_at: string | null; confirmed_by: string | null }>(
           'SELECT id, name, quantity, confirmed, confirmed_at, confirmed_by FROM materials WHERE stand_id = ? ORDER BY id',
           [standId]
@@ -210,6 +234,42 @@ export async function PUT(
     return Response.json({ success: true })
   } catch (error) {
     console.error('Stand PUT error:', error)
+    return Response.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const cookieStore = await cookies()
+    const auth = await getAuthFromCookies(cookieStore)
+
+    if (!auth || auth.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { id } = await params
+    const now = new Date().toISOString()
+
+    await queryD1Batch([
+      { sql: 'DELETE FROM checklist_items WHERE stand_id = ?', params: [id] },
+      { sql: 'DELETE FROM materials WHERE stand_id = ?', params: [id] },
+      { sql: 'DELETE FROM team_members WHERE stand_id = ?', params: [id] },
+      { sql: 'DELETE FROM occurrences WHERE stand_id = ?', params: [id] },
+      { sql: 'DELETE FROM photos WHERE stand_id = ?', params: [id] },
+      { sql: 'DELETE FROM files WHERE stand_id = ?', params: [id] },
+      { sql: 'DELETE FROM drive_links WHERE stand_id = ?', params: [id] },
+      { sql: "UPDATE stands SET label = '', notes = '', updated_at = ?, updated_by = ? WHERE id = ?", params: [now, auth.email, id] },
+    ])
+
+    return Response.json({ success: true })
+  } catch (error) {
+    console.error('Stand DELETE error:', error)
     return Response.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }

@@ -36,9 +36,11 @@ export function StandFiles({
   const [linkUrl, setLinkUrl] = useState("");
 
   async function handleDeleteFile(f: StandFile) {
-    await fetch(`/api/stands/${standId}/files?fileId=${f.id}`, {
+    await fetch(`/api/stands/${standId}/files`, {
       method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
+      body: JSON.stringify({ fileId: f.id }),
     });
     await onRefresh();
   }
@@ -57,9 +59,11 @@ export function StandFiles({
   }
 
   async function handleRemoveLink(id: number) {
-    await fetch(`/api/stands/${standId}/files?linkId=${id}`, {
+    await fetch(`/api/stands/${standId}/files`, {
       method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
+      body: JSON.stringify({ driveLinkId: id }),
     });
     await onRefresh();
   }

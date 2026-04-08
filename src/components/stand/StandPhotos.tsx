@@ -21,9 +21,11 @@ export function StandPhotos({ standId, photos, readOnly, onRefresh }: StandPhoto
   async function handleDelete(photo: PhotoDocument) {
     setDeleting(photo.id);
     try {
-      await fetch(`/api/stands/${standId}/photos?photoId=${photo.id}`, {
+      await fetch(`/api/stands/${standId}/photos`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ photoId: photo.id }),
       });
       await onRefresh();
     } finally {

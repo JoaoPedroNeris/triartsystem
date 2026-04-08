@@ -38,15 +38,17 @@ export function StandMaterials({ standId, materials, readOnly, onRefresh }: Stan
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ id: mat.id, confirmed: !mat.confirmed }),
+      body: JSON.stringify({ materialId: mat.id, confirmed: !mat.confirmed }),
     });
     await onRefresh();
   }
 
   async function handleRemove(id: number) {
-    await fetch(`/api/stands/${standId}/materials?id=${id}`, {
+    await fetch(`/api/stands/${standId}/materials`, {
       method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
+      body: JSON.stringify({ materialId: id }),
     });
     await onRefresh();
   }

@@ -95,16 +95,18 @@ export function StandTeam({ standId, team, readOnly, onRefresh }: StandTeamProps
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ group, name }),
+      body: JSON.stringify({ team: group, name }),
     });
     await onRefresh();
   }
 
   async function removeMember(group: "marcenaria" | "producao", index: number) {
     const name = group === "marcenaria" ? team.marcenaria[index] : team.producao[index];
-    await fetch(`/api/stands/${standId}/team?group=${group}&name=${encodeURIComponent(name)}`, {
+    await fetch(`/api/stands/${standId}/team`, {
       method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
+      body: JSON.stringify({ team: group, name }),
     });
     await onRefresh();
   }
