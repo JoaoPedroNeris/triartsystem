@@ -64,6 +64,13 @@ export function useStand(standId: number | null): UseStandReturn {
           materials: s.materials ?? [],
           team: s.team ?? { marcenaria: [], producao: [] },
           driveLinks: s.driveLinks ?? [],
+          progress: s.progress ?? {
+            eletrica: 0,
+            marcenaria: 0,
+            tapecaria: 0,
+            comunicacaoVisual: 0,
+            overall: 0,
+          },
         });
         setOccurrences(s.occurrences ?? []);
         setPhotos(s.photos ?? []);
