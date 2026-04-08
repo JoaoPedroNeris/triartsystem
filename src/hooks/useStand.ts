@@ -2,27 +2,35 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  subscribeToStand,
-  getOrCreateStand,
-  updateStandField,
-  updateStandFields,
-  subscribeToPhotos,
-  subscribeToOccurrences,
-  subscribeToFiles,
-} from "@/lib/firebase/firestore";
-import { StandDocument, PhotoDocument, Occurrence, StandFile } from "@/types/stand";
-import { useAuth } from "./useAuth";
+  StandDocument,
+  PhotoDocument,
+  Occurrence,
+  StandFile,
+  StandChecklist,
+  Material,
+  StandTeam,
+  DriveLink,
+} from "@/types/stand";
 
-export function useStand(standId: number | null) {
-  const { user } = useAuth();
+interface UseStandReturn {
+  stand: StandDocument | null;
+  photos: PhotoDocument[];
+  occurrences: Occurrence[];
+  files: StandFile[];
+  loading: boolean;
+  updateField: (field: string, value: unknown) => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+export function useStand(standId: number | null): UseStandReturn {
   const [stand, setStand] = useState<StandDocument | null>(null);
   const [photos, setPhotos] = useState<PhotoDocument[]>([]);
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [files, setFiles] = useState<StandFile[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!standId || !user) {
+  const fetchAll = useCallback(async () => {
+    if (!standId) {
       setStand(null);
       setPhotos([]);
       setOccurrences([]);
@@ -31,43 +39,73 @@ export function useStand(standId: number | null) {
       return;
     }
 
-    let initialized = false;
+    setLoading(true);
+    try {
+      const [standRes, checklistRes, materialsRes, teamRes, occRes, photosRes, filesRes] =
+        await Promise.all([
+          fetch(`/api/stands/${standId}`, { credentials: "include" }),
+          fetch(`/api/stands/${standId}/checklist`, { credentials: "include" }),
+          fetch(`/api/stands/${standId}/materials`, { credentials: "include" }),
+          fetch(`/api/stands/${standId}/team`, { credentials: "include" }),
+          fetch(`/api/stands/${standId}/occurrences`, { credentials: "include" }),
+          fetch(`/api/stands/${standId}/photos`, { credentials: "include" }),
+          fetch(`/api/stands/${standId}/files`, { credentials: "include" }),
+        ]);
 
-    async function init() {
-      await getOrCreateStand(standId!, user!.uid);
-      initialized = true;
+      const standData = standRes.ok ? await standRes.json() : null;
+      const checklistData = checklistRes.ok ? await checklistRes.json() : null;
+      const materialsData = materialsRes.ok ? await materialsRes.json() : null;
+      const teamData = teamRes.ok ? await teamRes.json() : null;
+      const occData = occRes.ok ? await occRes.json() : null;
+      const photosData = photosRes.ok ? await photosRes.json() : null;
+      const filesData = filesRes.ok ? await filesRes.json() : null;
+
+      if (standData) {
+        const checklist: StandChecklist = checklistData?.checklist ?? {
+          eletrica: [],
+          marcenaria: [],
+          tapecaria: [],
+          comunicacaoVisual: [],
+        };
+        const materials: Material[] = materialsData?.materials ?? [];
+        const team: StandTeam = teamData?.team ?? { marcenaria: [], producao: [] };
+        const driveLinks: DriveLink[] = filesData?.driveLinks ?? [];
+
+        setStand({
+          ...standData.stand,
+          checklist,
+          materials,
+          team,
+          driveLinks,
+        });
+      }
+
+      setOccurrences(occData?.occurrences ?? []);
+      setPhotos(photosData?.photos ?? []);
+      setFiles(filesData?.files ?? []);
+    } catch {
+      // ignore fetch errors
+    } finally {
+      setLoading(false);
     }
+  }, [standId]);
 
-    init();
-
-    const unsubs = [
-      subscribeToStand(standId, (data) => {
-        if (data) setStand(data);
-        if (initialized) setLoading(false);
-      }),
-      subscribeToPhotos(standId, setPhotos),
-      subscribeToOccurrences(standId, setOccurrences),
-      subscribeToFiles(standId, setFiles),
-    ];
-
-    return () => unsubs.forEach((u) => u());
-  }, [standId, user]);
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const updateField = useCallback(
     async (field: string, value: unknown) => {
-      if (!standId || !user) return;
-      await updateStandField(standId, field, value, user.uid);
+      if (!standId) return;
+      await fetch(`/api/stands/${standId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ [field]: value }),
+      });
     },
-    [standId, user]
+    [standId]
   );
 
-  const updateFields = useCallback(
-    async (fields: Record<string, unknown>) => {
-      if (!standId || !user) return;
-      await updateStandFields(standId, fields, user.uid);
-    },
-    [standId, user]
-  );
-
-  return { stand, photos, occurrences, files, loading, updateField, updateFields };
+  return { stand, photos, occurrences, files, loading, updateField, refresh: fetchAll };
 }

@@ -2,11 +2,11 @@
 
 import { standCoordinates, MAP_WIDTH, MAP_HEIGHT } from "@/data/standCoordinates";
 import { StandPolygon } from "./StandPolygon";
-import { StandDocument } from "@/types/stand";
-import { calculateOverallProgress, getStandStatus } from "@/lib/utils";
+import { StandSummary } from "@/types/stand";
+import { getStandStatus } from "@/lib/utils";
 
 interface MapSvgOverlayProps {
-  stands: StandDocument[];
+  stands: StandSummary[];
   selectedStandId: number | null;
   onStandClick: (id: number) => void;
 }
@@ -22,7 +22,7 @@ export function MapSvgOverlay({ stands, selectedStandId, onStandClick }: MapSvgO
     >
       {standCoordinates.map((sc) => {
         const standData = standsMap.get(sc.id);
-        const progress = standData ? calculateOverallProgress(standData.checklist) : 0;
+        const progress = standData?.progress?.overall ?? 0;
         const status = getStandStatus(progress);
         const label = standData?.label || sc.label || `Stand ${sc.id}`;
 

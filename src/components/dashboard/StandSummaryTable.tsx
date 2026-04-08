@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { StandDocument } from "@/types/stand";
-import { calculateCategoryProgress, calculateOverallProgress, cn } from "@/lib/utils";
+import { StandSummary } from "@/types/stand";
+import { cn } from "@/lib/utils";
 
 interface StandSummaryTableProps {
-  stands: StandDocument[];
+  stands: StandSummary[];
   onStandClick: (id: number) => void;
 }
 
@@ -34,12 +34,11 @@ export function StandSummaryTable({ stands, onStandClick }: StandSummaryTablePro
   const rows = stands.map((s) => ({
     id: s.id,
     label: s.label,
-    eletrica: calculateCategoryProgress(s.checklist.eletrica),
-    marcenaria: calculateCategoryProgress(s.checklist.marcenaria),
-    tapecaria: calculateCategoryProgress(s.checklist.tapecaria),
-    comunicacaoVisual: calculateCategoryProgress(s.checklist.comunicacaoVisual),
-    total: calculateOverallProgress(s.checklist),
-    team: s.team,
+    eletrica: s.progress?.eletrica ?? 0,
+    marcenaria: s.progress?.marcenaria ?? 0,
+    tapecaria: s.progress?.tapecaria ?? 0,
+    comunicacaoVisual: s.progress?.comunicacaoVisual ?? 0,
+    total: s.progress?.overall ?? 0,
   }));
 
   rows.sort((a, b) => {

@@ -1,19 +1,14 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase/config";
-import { loginWithEmail, logout } from "@/lib/firebase/auth";
-import { getUserProfile } from "@/lib/firebase/firestore";
-import { AuthContextType, UserProfile, UserRole } from "@/types/auth";
+import { useRouter } from "next/navigation";
+import { AuthContextType, UserProfile } from "@/types/auth";
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
-  profile: null,
-  role: null,
   loading: true,
   signIn: async () => {},
-  signOutUser: async () => {},
+  signOut: async () => {},
 });
 
 export function useAuth() {
@@ -21,35 +16,62 @@ export function useAuth() {
 }
 
 export function useAuthProvider(): AuthContextType {
-  const [user, setUser] = useState<{ uid: string; email: string } | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [role, setRole] = useState<UserRole | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
-      if (firebaseUser) {
-        setUser({ uid: firebaseUser.uid, email: firebaseUser.email || "" });
-        const userProfile = await getUserProfile(firebaseUser.uid);
-        setProfile(userProfile);
-        setRole(userProfile?.role || null);
-      } else {
-        setUser(null);
-        setProfile(null);
-        setRole(null);
+    let cancelled = false;
+
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled) setUser(data.user);
+        } else {
+          if (!cancelled) setUser(null);
+        }
+      } catch {
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
-    });
-    return unsubscribe;
+    }
+
+    checkSession();
+    return () => { cancelled = true; };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    await loginWithEmail(email, password);
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Falha na autenticacao");
+    }
+
+    const data = await res.json();
+    setUser(data.user);
   }, []);
 
-  const signOutUser = useCallback(async () => {
-    await logout();
-  }, []);
+  const signOut = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // ignore logout errors
+    }
+    setUser(null);
+    router.replace("/login");
+  }, [router]);
 
-  return { user, profile, role, loading, signIn, signOutUser };
+  return { user, loading, signIn, signOut };
 }

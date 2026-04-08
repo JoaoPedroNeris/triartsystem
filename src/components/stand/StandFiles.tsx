@@ -1,14 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { StandFile, DriveLink } from "@/types/stand";
-import { addFile, deleteFile } from "@/lib/firebase/firestore";
-import { uploadFile, deleteStorageFile } from "@/lib/firebase/storage";
-import { Timestamp } from "firebase/firestore";
-import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   Upload,
   Trash2,
@@ -17,7 +12,6 @@ import {
   ExternalLink,
   Link2,
   Plus,
-  Loader2,
 } from "lucide-react";
 import { formatFileSize } from "@/lib/utils";
 import { format } from "date-fns";
@@ -28,7 +22,7 @@ interface StandFilesProps {
   files: StandFile[];
   driveLinks: DriveLink[];
   readOnly: boolean;
-  onUpdateDriveLinks: (links: DriveLink[]) => Promise<void>;
+  onRefresh: () => Promise<void>;
 }
 
 export function StandFiles({
@@ -36,62 +30,38 @@ export function StandFiles({
   files,
   driveLinks,
   readOnly,
-  onUpdateDriveLinks,
+  onRefresh,
 }: StandFilesProps) {
-  const { user } = useAuth();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [linkTitle, setLinkTitle] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    setUploading(true);
-    setProgress(0);
-    try {
-      const path = `stands/stand_${standId}/files/${Date.now()}_${file.name}`;
-      const { url, storagePath } = await uploadFile(path, file, setProgress);
-      await addFile(standId, {
-        name: file.name,
-        url,
-        storagePath,
-        size: file.size,
-        uploadedAt: Timestamp.now(),
-        uploadedBy: user.uid,
-      });
-    } finally {
-      setUploading(false);
-      setProgress(0);
-      if (inputRef.current) inputRef.current.value = "";
-    }
-  }
-
   async function handleDeleteFile(f: StandFile) {
-    try {
-      await deleteStorageFile(f.storagePath);
-    } catch { /* ignore */ }
-    await deleteFile(standId, f.id);
+    await fetch(`/api/stands/${standId}/files?fileId=${f.id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    await onRefresh();
   }
 
   async function handleAddLink() {
-    if (!linkTitle.trim() || !linkUrl.trim() || !user) return;
-    const newLink: DriveLink = {
-      id: `link_${Date.now()}`,
-      title: linkTitle.trim(),
-      url: linkUrl.trim(),
-      addedAt: Timestamp.now(),
-      addedBy: user.uid,
-    };
-    await onUpdateDriveLinks([...driveLinks, newLink]);
+    if (!linkTitle.trim() || !linkUrl.trim()) return;
+    await fetch(`/api/stands/${standId}/files`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ title: linkTitle.trim(), url: linkUrl.trim() }),
+    });
     setLinkTitle("");
     setLinkUrl("");
+    await onRefresh();
   }
 
-  async function handleRemoveLink(id: string) {
-    await onUpdateDriveLinks(driveLinks.filter((l) => l.id !== id));
+  async function handleRemoveLink(id: number) {
+    await fetch(`/api/stands/${standId}/files?linkId=${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    await onRefresh();
   }
 
   return (
@@ -104,21 +74,14 @@ export function StandFiles({
         </h3>
         {!readOnly && (
           <div>
-            <input ref={inputRef} type="file" onChange={handleUpload} className="hidden" />
             <Button
-              onClick={() => inputRef.current?.click()}
-              disabled={uploading}
+              disabled
               variant="outline"
-              className="w-full h-10 rounded-xl border-dashed border-2 border-triart-green/30 text-triart-green hover:bg-triart-green/5"
+              className="w-full h-10 rounded-xl border-dashed border-2 border-triart-green/30 text-triart-gray hover:bg-triart-green/5 cursor-not-allowed"
             >
-              {uploading ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4 mr-2" />
-              )}
-              {uploading ? "Enviando..." : "Upload de Arquivo"}
+              <Upload className="w-4 h-4 mr-2" />
+              Upload desabilitado (migracao em andamento)
             </Button>
-            {uploading && <Progress value={progress} className="mt-2 h-1.5" />}
           </div>
         )}
 
@@ -133,8 +96,8 @@ export function StandFiles({
                   <p className="text-sm text-triart-black truncate">{f.name}</p>
                   <p className="text-[10px] text-triart-gray">
                     {formatFileSize(f.size)} &middot;{" "}
-                    {f.uploadedAt?.toDate
-                      ? format(f.uploadedAt.toDate(), "dd MMM yyyy", { locale: ptBR })
+                    {f.uploadedAt
+                      ? format(new Date(f.uploadedAt), "dd MMM yyyy", { locale: ptBR })
                       : ""}
                   </p>
                 </div>

@@ -13,17 +13,15 @@ import { CategoryChart } from "@/components/dashboard/CategoryChart";
 import { OccurrencesSummary } from "@/components/dashboard/OccurrencesSummary";
 import { StandSummaryTable } from "@/components/dashboard/StandSummaryTable";
 import { ExportButton } from "@/components/dashboard/ExportButton";
-import { calculateOverallProgress, calculateCategoryProgress } from "@/lib/utils";
 import { Occurrence } from "@/types/stand";
-import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
 import { Zap, Hammer, Sofa, Palette } from "lucide-react";
 
 function EventoContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { stands, loading } = useStands();
-  const { role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role;
 
   const [view, setView] = useState<"mapa" | "dashboard">(
     (searchParams.get("view") as "mapa" | "dashboard") || "mapa"
@@ -42,45 +40,37 @@ function EventoContent() {
   }, [role]);
 
   useEffect(() => {
-    if (stands.length === 0) return;
-
-    const unsubs: (() => void)[] = [];
-    const occsByStand = new Map<number, Occurrence[]>();
-
-    for (const stand of stands) {
-      const q = query(
-        collection(db, "stands", `stand_${stand.id}`, "occurrences"),
-        orderBy("createdAt", "desc")
-      );
-      const unsub = onSnapshot(q, (snap) => {
-        const occs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Occurrence));
-        occsByStand.set(stand.id, occs);
-        const all = Array.from(occsByStand.values()).flat();
-        setAllOccurrences(all);
-      });
-      unsubs.push(unsub);
+    async function fetchOccurrences() {
+      try {
+        const res = await fetch("/api/stands/0/occurrences?all=true", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          setAllOccurrences(data.occurrences ?? []);
+        }
+      } catch {
+        // ignore
+      }
     }
-
-    return () => unsubs.forEach((u) => u());
+    fetchOccurrences();
   }, [stands]);
 
   const avgProgress = stands.length > 0
-    ? Math.round(stands.reduce((acc, s) => acc + calculateOverallProgress(s.checklist), 0) / stands.length)
+    ? Math.round(stands.reduce((acc, s) => acc + (s.progress?.overall ?? 0), 0) / stands.length)
     : 0;
 
-  const completedStands = stands.filter((s) => calculateOverallProgress(s.checklist) === 100).length;
+  const completedStands = stands.filter((s) => (s.progress?.overall ?? 0) === 100).length;
 
   const avgEletrica = stands.length > 0
-    ? Math.round(stands.reduce((a, s) => a + calculateCategoryProgress(s.checklist.eletrica), 0) / stands.length)
+    ? Math.round(stands.reduce((a, s) => a + (s.progress?.eletrica ?? 0), 0) / stands.length)
     : 0;
   const avgMarcenaria = stands.length > 0
-    ? Math.round(stands.reduce((a, s) => a + calculateCategoryProgress(s.checklist.marcenaria), 0) / stands.length)
+    ? Math.round(stands.reduce((a, s) => a + (s.progress?.marcenaria ?? 0), 0) / stands.length)
     : 0;
   const avgTapecaria = stands.length > 0
-    ? Math.round(stands.reduce((a, s) => a + calculateCategoryProgress(s.checklist.tapecaria), 0) / stands.length)
+    ? Math.round(stands.reduce((a, s) => a + (s.progress?.tapecaria ?? 0), 0) / stands.length)
     : 0;
   const avgComVisual = stands.length > 0
-    ? Math.round(stands.reduce((a, s) => a + calculateCategoryProgress(s.checklist.comunicacaoVisual), 0) / stands.length)
+    ? Math.round(stands.reduce((a, s) => a + (s.progress?.comunicacaoVisual ?? 0), 0) / stands.length)
     : 0;
 
   if (loading) {

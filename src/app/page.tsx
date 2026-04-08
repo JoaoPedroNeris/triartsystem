@@ -2,21 +2,29 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase/config";
 
 export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.replace("/evento");
-      } else {
-        router.replace("/login");
+    let cancelled = false;
+
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (cancelled) return;
+        if (res.ok) {
+          router.replace("/evento");
+        } else {
+          router.replace("/login");
+        }
+      } catch {
+        if (!cancelled) router.replace("/login");
       }
-    });
-    return unsubscribe;
+    }
+
+    checkAuth();
+    return () => { cancelled = true; };
   }, [router]);
 
   return (

@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
-import { StandDocument, Occurrence } from "@/types/stand";
+import { StandSummary, Occurrence } from "@/types/stand";
 import { generateExcel } from "@/lib/export";
 
 interface ExportButtonProps {
-  stands: StandDocument[];
+  stands: StandSummary[];
   occurrences: Occurrence[];
 }
 

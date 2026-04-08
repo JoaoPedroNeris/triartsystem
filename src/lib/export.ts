@@ -1,9 +1,5 @@
 import ExcelJS from "exceljs";
-import { StandDocument, Occurrence } from "@/types/stand";
-import {
-  calculateCategoryProgress,
-  calculateOverallProgress,
-} from "./utils";
+import { StandSummary, Occurrence } from "@/types/stand";
 
 const HEADER_FILL: ExcelJS.Fill = {
   type: "pattern",
@@ -30,7 +26,7 @@ function styleHeader(row: ExcelJS.Row) {
 }
 
 export async function generateExcel(
-  stands: StandDocument[],
+  stands: StandSummary[],
   occurrences: Occurrence[]
 ): Promise<ArrayBuffer> {
   const wb = new ExcelJS.Workbook();
@@ -38,9 +34,8 @@ export async function generateExcel(
 
   // ---- Sheet 1: Resumo ----
   const resumo = wb.addWorksheet("Resumo Geral");
-  const allProgress = stands.map((s) => calculateOverallProgress(s.checklist));
   const avg = stands.length > 0
-    ? Math.round(allProgress.reduce((a, b) => a + b, 0) / stands.length)
+    ? Math.round(stands.reduce((a, s) => a + (s.progress?.overall ?? 0), 0) / stands.length)
     : 0;
 
   resumo.columns = [
@@ -53,7 +48,7 @@ export async function generateExcel(
   resumo.addRow({ metrica: "Progresso Medio", valor: `${avg}%` });
   resumo.addRow({
     metrica: "Stands Concluidos (100%)",
-    valor: allProgress.filter((p) => p === 100).length,
+    valor: stands.filter((s) => (s.progress?.overall ?? 0) === 100).length,
   });
   resumo.addRow({
     metrica: "Ocorrencias Abertas",
@@ -74,10 +69,7 @@ export async function generateExcel(
     { header: "Tapecaria %", key: "tapecaria", width: 14 },
     { header: "Com. Visual %", key: "comVisual", width: 14 },
     { header: "Total %", key: "total", width: 12 },
-    { header: "Eq. Marcenaria", key: "eqMarc", width: 25 },
-    { header: "Eq. Producao", key: "eqProd", width: 25 },
-    { header: "Ocorrencias", key: "occs", width: 14 },
-    { header: "Materiais", key: "mats", width: 14 },
+    { header: "Ocorrencias Abertas", key: "occs", width: 20 },
   ];
   styleHeader(standsSheet.getRow(1));
 
@@ -88,16 +80,13 @@ export async function generateExcel(
     );
     standsSheet.addRow({
       id: s.id,
-      label: s.label,
-      eletrica: calculateCategoryProgress(s.checklist.eletrica),
-      marcenaria: calculateCategoryProgress(s.checklist.marcenaria),
-      tapecaria: calculateCategoryProgress(s.checklist.tapecaria),
-      comVisual: calculateCategoryProgress(s.checklist.comunicacaoVisual),
-      total: calculateOverallProgress(s.checklist),
-      eqMarc: s.team.marcenaria.join(", "),
-      eqProd: s.team.producao.join(", "),
+      label: s.label || `Stand ${s.id}`,
+      eletrica: s.progress?.eletrica ?? 0,
+      marcenaria: s.progress?.marcenaria ?? 0,
+      tapecaria: s.progress?.tapecaria ?? 0,
+      comVisual: s.progress?.comunicacaoVisual ?? 0,
+      total: s.progress?.overall ?? 0,
       occs: standOccs.length,
-      mats: `${s.materials.filter((m) => m.confirmed).length}/${s.materials.length}`,
     });
   }
 
@@ -120,29 +109,8 @@ export async function generateExcel(
       desc: o.description,
       priority: o.priority.charAt(0).toUpperCase() + o.priority.slice(1),
       status: o.status.charAt(0).toUpperCase() + o.status.slice(1),
-      date: o.createdAt?.toDate?.() || "",
+      date: o.createdAt ?? "",
     });
-  }
-
-  // ---- Sheet 4: Materiais ----
-  const matsSheet = wb.addWorksheet("Materiais");
-  matsSheet.columns = [
-    { header: "Stand", key: "stand", width: 10 },
-    { header: "Material", key: "name", width: 30 },
-    { header: "Quantidade", key: "qty", width: 14 },
-    { header: "Confirmado", key: "confirmed", width: 14 },
-  ];
-  styleHeader(matsSheet.getRow(1));
-
-  for (const s of sorted) {
-    for (const m of s.materials) {
-      matsSheet.addRow({
-        stand: s.id,
-        name: m.name,
-        qty: m.quantity,
-        confirmed: m.confirmed ? "Sim" : "Nao",
-      });
-    }
   }
 
   const buffer = await wb.xlsx.writeBuffer();

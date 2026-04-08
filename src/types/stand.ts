@@ -1,10 +1,8 @@
-import { Timestamp } from "firebase/firestore";
-
 export interface ChecklistItem {
-  id: string;
+  id: number;
   label: string;
   checked: boolean;
-  checkedAt?: Timestamp;
+  checkedAt?: string;
   checkedBy?: string;
 }
 
@@ -15,20 +13,28 @@ export interface StandChecklist {
   comunicacaoVisual: ChecklistItem[];
 }
 
+export interface StandProgress {
+  eletrica: number;
+  marcenaria: number;
+  tapecaria: number;
+  comunicacaoVisual: number;
+  overall: number;
+}
+
 export interface Material {
-  id: string;
+  id: number;
   name: string;
   quantity: number;
   confirmed: boolean;
-  confirmedAt?: Timestamp;
+  confirmedAt?: string;
   confirmedBy?: string;
 }
 
 export interface DriveLink {
-  id: string;
+  id: number;
   title: string;
   url: string;
-  addedAt: Timestamp;
+  addedAt: string;
   addedBy: string;
 }
 
@@ -41,42 +47,48 @@ export interface StandDocument {
   id: number;
   label: string;
   notes: string;
-  updatedAt: Timestamp;
-  updatedBy: string;
+  updatedAt?: string;
+  updatedBy?: string;
   checklist: StandChecklist;
   materials: Material[];
   team: StandTeam;
   driveLinks: DriveLink[];
+  progress: StandProgress;
+}
+
+export interface StandSummary {
+  id: number;
+  label: string;
+  notes: string;
+  progress: StandProgress;
 }
 
 export interface PhotoDocument {
-  id: string;
+  id: number;
   url: string;
-  storagePath: string;
   caption?: string;
-  uploadedAt: Timestamp;
+  uploadedAt: string;
   uploadedBy: string;
 }
 
 export interface Occurrence {
-  id: string;
+  id: number;
   standId: number;
   title: string;
   description: string;
   priority: "leve" | "media" | "extrema";
   status: "aberta" | "resolvida";
-  createdAt: Timestamp;
+  createdAt: string;
   createdBy: string;
-  resolvedAt?: Timestamp;
+  resolvedAt?: string;
   resolvedBy?: string;
 }
 
 export interface StandFile {
-  id: string;
+  id: number;
   name: string;
   url: string;
-  storagePath: string;
   size: number;
-  uploadedAt: Timestamp;
+  uploadedAt: string;
   uploadedBy: string;
 }

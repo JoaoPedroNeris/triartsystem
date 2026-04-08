@@ -3,10 +3,10 @@
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { MapSvgOverlay } from "./MapSvgOverlay";
 import { MapControls } from "./MapControls";
-import { StandDocument } from "@/types/stand";
+import { StandSummary } from "@/types/stand";
 
 interface InteractiveMapProps {
-  stands: StandDocument[];
+  stands: StandSummary[];
   selectedStandId: number | null;
   onStandClick: (id: number) => void;
 }

@@ -30,7 +30,7 @@ export function ChecklistCategory({ items, readOnly, onToggle }: ChecklistCatego
         {items.map((item) => (
           <button
             key={item.id}
-            onClick={() => !readOnly && onToggle(item.id)}
+            onClick={() => !readOnly && onToggle(String(item.id))}
             disabled={readOnly}
             className={cn(
               "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-apple",

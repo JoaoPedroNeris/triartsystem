@@ -3,12 +3,12 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { StandDocument } from "@/types/stand";
+import { StandSummary } from "@/types/stand";
 import { standCoordinates } from "@/data/standCoordinates";
 import { cn } from "@/lib/utils";
 
 interface StandSearchProps {
-  stands: StandDocument[];
+  stands: StandSummary[];
   onSelect: (standId: number) => void;
 }
 

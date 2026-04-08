@@ -41,13 +41,13 @@ interface StandModalProps {
 }
 
 export function StandModal({ standId, onClose }: StandModalProps) {
-  const { stand, photos, occurrences, files, loading, updateField, updateFields } =
+  const { stand, photos, occurrences, files, loading, updateField, refresh } =
     useStand(standId);
-  const { role } = useAuth();
+  const { user } = useAuth();
   const [editingLabel, setEditingLabel] = useState(false);
   const [labelValue, setLabelValue] = useState("");
 
-  const readOnly = role !== "admin";
+  const readOnly = user?.role !== "admin";
   const progress = stand ? calculateOverallProgress(stand.checklist) : 0;
   const openOccurrences = occurrences.filter((o) => o.status === "aberta").length;
 
@@ -59,17 +59,24 @@ export function StandModal({ standId, onClose }: StandModalProps) {
   );
 
   async function handleToggleChecklist(category: keyof ChecklistType, itemId: string) {
-    if (!stand) return;
+    if (!stand || !standId) return;
     const items = stand.checklist[category];
-    const updated = items.map((item) =>
-      item.id === itemId ? { ...item, checked: !item.checked } : item
-    );
-    await updateField(`checklist.${category}`, updated);
+    const item = items.find((i) => String(i.id) === itemId);
+    if (!item) return;
+
+    await fetch(`/api/stands/${standId}/checklist`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ itemId: item.id, checked: !item.checked }),
+    });
+    await refresh();
   }
 
   async function handleLabelSave() {
     if (labelValue.trim()) {
       await updateField("label", labelValue.trim());
+      await refresh();
     }
     setEditingLabel(false);
   }
@@ -179,7 +186,7 @@ export function StandModal({ standId, onClose }: StandModalProps) {
                 <StandNotes notes={stand.notes} readOnly={readOnly} onSave={handleSaveNotes} />
               </TabsContent>
               <TabsContent value="fotos" className="mt-0">
-                <StandPhotos standId={stand.id} photos={photos} readOnly={readOnly} />
+                <StandPhotos standId={stand.id} photos={photos} readOnly={readOnly} onRefresh={refresh} />
               </TabsContent>
               <TabsContent value="checklist" className="mt-0">
                 <StandChecklist
@@ -190,20 +197,22 @@ export function StandModal({ standId, onClose }: StandModalProps) {
               </TabsContent>
               <TabsContent value="materiais" className="mt-0">
                 <StandMaterials
+                  standId={stand.id}
                   materials={stand.materials}
                   readOnly={readOnly}
-                  onUpdate={(materials) => updateField("materials", materials)}
+                  onRefresh={refresh}
                 />
               </TabsContent>
               <TabsContent value="equipe" className="mt-0">
                 <StandTeam
+                  standId={stand.id}
                   team={stand.team}
                   readOnly={readOnly}
-                  onUpdate={(team) => updateFields({ "team.marcenaria": team.marcenaria, "team.producao": team.producao })}
+                  onRefresh={refresh}
                 />
               </TabsContent>
               <TabsContent value="ocorrencias" className="mt-0">
-                <StandOccurrences standId={stand.id} occurrences={occurrences} readOnly={readOnly} />
+                <StandOccurrences standId={stand.id} occurrences={occurrences} readOnly={readOnly} onRefresh={refresh} />
               </TabsContent>
               <TabsContent value="arquivos" className="mt-0">
                 <StandFiles
@@ -211,7 +220,7 @@ export function StandModal({ standId, onClose }: StandModalProps) {
                   files={files}
                   driveLinks={stand.driveLinks}
                   readOnly={readOnly}
-                  onUpdateDriveLinks={(links) => updateField("driveLinks", links)}
+                  onRefresh={refresh}
                 />
               </TabsContent>
               <TabsContent value="progresso" className="mt-0">

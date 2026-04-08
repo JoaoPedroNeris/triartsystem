@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Header() {
-  const { user, profile, signOutUser } = useAuth();
+  const { user, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 glass border-b border-black/5">
@@ -35,16 +35,16 @@ export function Header() {
                 <User className="w-4 h-4 text-triart-green" />
               </div>
               <span className="hidden md:block text-sm font-medium text-triart-black">
-                {profile?.name || user?.email?.split("@")[0] || "Usuario"}
+                {user?.name || user?.email?.split("@")[0] || "Usuario"}
               </span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-lg">
               <div className="px-2 py-1.5 text-xs text-triart-gray">{user?.email}</div>
-              {profile?.role && (
-                <div className="px-2 py-1 text-xs text-triart-gray capitalize">{profile.role}</div>
+              {user?.role && (
+                <div className="px-2 py-1 text-xs text-triart-gray capitalize">{user.role}</div>
               )}
               <DropdownMenuItem
-                onClick={signOutUser}
+                onClick={signOut}
                 className="text-red-500 focus:text-red-500 cursor-pointer"
               >
                 <LogOut className="w-4 h-4 mr-2" />

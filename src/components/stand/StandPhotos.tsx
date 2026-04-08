@@ -1,14 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { PhotoDocument } from "@/types/stand";
-import { addPhoto, deletePhoto } from "@/lib/firebase/firestore";
-import { uploadFile, deleteStorageFile } from "@/lib/firebase/storage";
-import { Timestamp } from "firebase/firestore";
-import { useAuth } from "@/hooks/useAuth";
-import { Camera, Trash2, Loader2, X } from "lucide-react";
+import { Camera, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -16,69 +11,38 @@ interface StandPhotosProps {
   standId: number;
   photos: PhotoDocument[];
   readOnly: boolean;
+  onRefresh: () => Promise<void>;
 }
 
-export function StandPhotos({ standId, photos, readOnly }: StandPhotosProps) {
-  const { user } = useAuth();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
+export function StandPhotos({ standId, photos, readOnly, onRefresh }: StandPhotosProps) {
   const [preview, setPreview] = useState<string | null>(null);
-
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    setUploading(true);
-    setProgress(0);
-    try {
-      const path = `stands/stand_${standId}/photos/${Date.now()}_${file.name}`;
-      const { url, storagePath } = await uploadFile(path, file, setProgress);
-      await addPhoto(standId, {
-        url,
-        storagePath,
-        uploadedAt: Timestamp.now(),
-        uploadedBy: user.uid,
-      });
-    } finally {
-      setUploading(false);
-      setProgress(0);
-      if (inputRef.current) inputRef.current.value = "";
-    }
-  }
+  const [deleting, setDeleting] = useState<number | null>(null);
 
   async function handleDelete(photo: PhotoDocument) {
+    setDeleting(photo.id);
     try {
-      await deleteStorageFile(photo.storagePath);
-    } catch { /* file may already be deleted */ }
-    await deletePhoto(standId, photo.id);
+      await fetch(`/api/stands/${standId}/photos?photoId=${photo.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      await onRefresh();
+    } finally {
+      setDeleting(null);
+    }
   }
 
   return (
     <div className="space-y-4">
       {!readOnly && (
         <div>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleUpload}
-            className="hidden"
-          />
           <Button
-            onClick={() => inputRef.current?.click()}
-            disabled={uploading}
+            disabled
             variant="outline"
-            className="rounded-xl border-dashed border-2 border-triart-green/30 text-triart-green hover:bg-triart-green/5 h-12 w-full"
+            className="rounded-xl border-dashed border-2 border-triart-green/30 text-triart-gray h-12 w-full cursor-not-allowed"
           >
-            {uploading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Camera className="w-4 h-4 mr-2" />
-            )}
-            {uploading ? "Enviando..." : "Adicionar Foto"}
+            <Camera className="w-4 h-4 mr-2" />
+            Upload desabilitado (migracao em andamento)
           </Button>
-          {uploading && <Progress value={progress} className="mt-2 h-1.5" />}
         </div>
       )}
 
@@ -101,14 +65,15 @@ export function StandPhotos({ standId, photos, readOnly }: StandPhotosProps) {
               </button>
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2">
                 <p className="text-[10px] text-white/80">
-                  {photo.uploadedAt?.toDate
-                    ? format(photo.uploadedAt.toDate(), "dd MMM yyyy, HH:mm", { locale: ptBR })
+                  {photo.uploadedAt
+                    ? format(new Date(photo.uploadedAt), "dd MMM yyyy, HH:mm", { locale: ptBR })
                     : ""}
                 </p>
               </div>
               {!readOnly && (
                 <button
                   onClick={() => handleDelete(photo)}
+                  disabled={deleting === photo.id}
                   className="absolute top-2 right-2 w-7 h-7 bg-red-500/80 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-white" />

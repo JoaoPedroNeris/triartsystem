@@ -1,16 +1,15 @@
 export type UserRole = "admin" | "produtor" | "visitante";
 
 export interface UserProfile {
+  id: number;
   email: string;
-  name: string;
   role: UserRole;
+  name: string;
 }
 
 export interface AuthContextType {
-  user: { uid: string; email: string } | null;
-  profile: UserProfile | null;
-  role: UserRole | null;
+  user: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signOutUser: () => Promise<void>;
+  signOut: () => Promise<void>;
 }

@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Plus, X, Hammer, Clapperboard } from "lucide-react";
 
 interface StandTeamProps {
+  standId: number;
   team: TeamType;
   readOnly: boolean;
-  onUpdate: (team: TeamType) => Promise<void>;
+  onRefresh: () => Promise<void>;
 }
 
 function TeamSection({
@@ -88,7 +89,26 @@ function TeamSection({
   );
 }
 
-export function StandTeam({ team, readOnly, onUpdate }: StandTeamProps) {
+export function StandTeam({ standId, team, readOnly, onRefresh }: StandTeamProps) {
+  async function addMember(group: "marcenaria" | "producao", name: string) {
+    await fetch(`/api/stands/${standId}/team`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ group, name }),
+    });
+    await onRefresh();
+  }
+
+  async function removeMember(group: "marcenaria" | "producao", index: number) {
+    const name = group === "marcenaria" ? team.marcenaria[index] : team.producao[index];
+    await fetch(`/api/stands/${standId}/team?group=${group}&name=${encodeURIComponent(name)}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    await onRefresh();
+  }
+
   return (
     <div className="space-y-6">
       <TeamSection
@@ -96,20 +116,16 @@ export function StandTeam({ team, readOnly, onUpdate }: StandTeamProps) {
         icon={Hammer}
         members={team.marcenaria}
         readOnly={readOnly}
-        onAdd={(name) => onUpdate({ ...team, marcenaria: [...team.marcenaria, name] })}
-        onRemove={(i) =>
-          onUpdate({ ...team, marcenaria: team.marcenaria.filter((_, idx) => idx !== i) })
-        }
+        onAdd={(name) => addMember("marcenaria", name)}
+        onRemove={(i) => removeMember("marcenaria", i)}
       />
       <TeamSection
         label="Equipe de Producao"
         icon={Clapperboard}
         members={team.producao}
         readOnly={readOnly}
-        onAdd={(name) => onUpdate({ ...team, producao: [...team.producao, name] })}
-        onRemove={(i) =>
-          onUpdate({ ...team, producao: team.producao.filter((_, idx) => idx !== i) })
-        }
+        onAdd={(name) => addMember("producao", name)}
+        onRemove={(i) => removeMember("producao", i)}
       />
     </div>
   );

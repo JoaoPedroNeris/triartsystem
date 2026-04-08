@@ -2,9 +2,6 @@
 
 import { useState } from "react";
 import { Occurrence } from "@/types/stand";
-import { addOccurrence, resolveOccurrence } from "@/lib/firebase/firestore";
-import { Timestamp } from "firebase/firestore";
-import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -18,6 +15,7 @@ interface StandOccurrencesProps {
   standId: number;
   occurrences: Occurrence[];
   readOnly: boolean;
+  onRefresh: () => Promise<void>;
 }
 
 const priorityConfig = {
@@ -26,8 +24,7 @@ const priorityConfig = {
   extrema: { label: "Extrema", color: "bg-red-100 text-red-700 border-red-200" },
 };
 
-export function StandOccurrences({ standId, occurrences, readOnly }: StandOccurrencesProps) {
-  const { user } = useAuth();
+export function StandOccurrences({ standId, occurrences, readOnly, onRefresh }: StandOccurrencesProps) {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -40,25 +37,32 @@ export function StandOccurrences({ standId, occurrences, readOnly }: StandOccurr
   });
 
   async function handleSubmit() {
-    if (!title.trim() || !user) return;
-    await addOccurrence(standId, {
-      standId,
-      title: title.trim(),
-      description: description.trim(),
-      priority,
-      status: "aberta",
-      createdAt: Timestamp.now(),
-      createdBy: user.uid,
+    if (!title.trim()) return;
+    await fetch(`/api/stands/${standId}/occurrences`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        title: title.trim(),
+        description: description.trim(),
+        priority,
+      }),
     });
     setTitle("");
     setDescription("");
     setPriority("media");
     setShowForm(false);
+    await onRefresh();
   }
 
-  async function handleResolve(occurrenceId: string) {
-    if (!user) return;
-    await resolveOccurrence(standId, occurrenceId, user.uid);
+  async function handleResolve(occurrenceId: number) {
+    await fetch(`/api/stands/${standId}/occurrences`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ id: occurrenceId, status: "resolvida" }),
+    });
+    await onRefresh();
   }
 
   return (
@@ -156,8 +160,8 @@ export function StandOccurrences({ standId, occurrences, readOnly }: StandOccurr
                     <p className="text-xs text-triart-gray mt-1">{occ.description}</p>
                   )}
                   <p className="text-[10px] text-triart-gray mt-2">
-                    {occ.createdAt?.toDate
-                      ? format(occ.createdAt.toDate(), "dd MMM yyyy, HH:mm", { locale: ptBR })
+                    {occ.createdAt
+                      ? format(new Date(occ.createdAt), "dd MMM yyyy, HH:mm", { locale: ptBR })
                       : ""}
                   </p>
                 </div>

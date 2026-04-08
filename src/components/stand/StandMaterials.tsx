@@ -8,12 +8,13 @@ import { Check, Plus, Trash2, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StandMaterialsProps {
+  standId: number;
   materials: Material[];
   readOnly: boolean;
-  onUpdate: (materials: Material[]) => Promise<void>;
+  onRefresh: () => Promise<void>;
 }
 
-export function StandMaterials({ materials, readOnly, onUpdate }: StandMaterialsProps) {
+export function StandMaterials({ standId, materials, readOnly, onRefresh }: StandMaterialsProps) {
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("");
 
@@ -21,26 +22,33 @@ export function StandMaterials({ materials, readOnly, onUpdate }: StandMaterials
 
   async function handleAdd() {
     if (!name.trim()) return;
-    const newMaterial: Material = {
-      id: `mat_${Date.now()}`,
-      name: name.trim(),
-      quantity: parseInt(quantity) || 1,
-      confirmed: false,
-    };
-    await onUpdate([...materials, newMaterial]);
+    await fetch(`/api/stands/${standId}/materials`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name: name.trim(), quantity: parseInt(quantity) || 1 }),
+    });
     setName("");
     setQuantity("");
+    await onRefresh();
   }
 
-  async function handleToggle(id: string) {
-    const updated = materials.map((m) =>
-      m.id === id ? { ...m, confirmed: !m.confirmed } : m
-    );
-    await onUpdate(updated);
+  async function handleToggle(mat: Material) {
+    await fetch(`/api/stands/${standId}/materials`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ id: mat.id, confirmed: !mat.confirmed }),
+    });
+    await onRefresh();
   }
 
-  async function handleRemove(id: string) {
-    await onUpdate(materials.filter((m) => m.id !== id));
+  async function handleRemove(id: number) {
+    await fetch(`/api/stands/${standId}/materials?id=${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    await onRefresh();
   }
 
   return (
@@ -97,7 +105,7 @@ export function StandMaterials({ materials, readOnly, onUpdate }: StandMaterials
               )}
             >
               <button
-                onClick={() => !readOnly && handleToggle(mat.id)}
+                onClick={() => !readOnly && handleToggle(mat)}
                 disabled={readOnly}
                 className={cn(
                   "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-200",
