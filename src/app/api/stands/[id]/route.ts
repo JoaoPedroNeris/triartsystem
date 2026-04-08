@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import { queryD1, queryD1Batch } from '@/lib/cloudflare/d1'
+import { queryD1 } from '@/lib/cloudflare/d1'
 import { getAuthFromCookies } from '@/lib/auth'
 import { DEFAULT_CHECKLIST_ITEMS } from '@/data/defaultChecklist'
 
@@ -39,21 +39,28 @@ export async function GET(
     )
 
     if (checklistItems.length === 0) {
-      const statements: { sql: string; params: string[] }[] = []
-      for (const [category, labels] of Object.entries(DEFAULT_CHECKLIST_ITEMS)) {
-        for (const label of labels) {
-          statements.push({
-            sql: 'INSERT INTO checklist_items (stand_id, category, label, checked) VALUES (?, ?, ?, 0)',
-            params: [standId, category, label],
-          })
+      try {
+        const rows: string[][] = []
+        const placeholders: string[] = []
+        for (const [category, labels] of Object.entries(DEFAULT_CHECKLIST_ITEMS)) {
+          for (const label of labels) {
+            placeholders.push('(?, ?, ?, 0)')
+            rows.push([standId, category, label])
+          }
         }
-      }
-      await queryD1Batch(statements)
+        const params = rows.flat()
+        await queryD1(
+          `INSERT INTO checklist_items (stand_id, category, label, checked) VALUES ${placeholders.join(', ')}`,
+          params
+        )
 
-      checklistItems = await queryD1<ChecklistRow>(
-        'SELECT id, category, label, checked, checked_at, checked_by FROM checklist_items WHERE stand_id = ? ORDER BY id',
-        [standId]
-      )
+        checklistItems = await queryD1<ChecklistRow>(
+          'SELECT id, category, label, checked, checked_at, checked_by FROM checklist_items WHERE stand_id = ? ORDER BY id',
+          [standId]
+        )
+      } catch (e) {
+        console.error('Checklist lazy-init error:', e)
+      }
     }
 
     // Fetch remaining data in parallel
@@ -256,16 +263,19 @@ export async function DELETE(
     const { id } = await params
     const now = new Date().toISOString()
 
-    await queryD1Batch([
-      { sql: 'DELETE FROM checklist_items WHERE stand_id = ?', params: [id] },
-      { sql: 'DELETE FROM materials WHERE stand_id = ?', params: [id] },
-      { sql: 'DELETE FROM team_members WHERE stand_id = ?', params: [id] },
-      { sql: 'DELETE FROM occurrences WHERE stand_id = ?', params: [id] },
-      { sql: 'DELETE FROM photos WHERE stand_id = ?', params: [id] },
-      { sql: 'DELETE FROM files WHERE stand_id = ?', params: [id] },
-      { sql: 'DELETE FROM drive_links WHERE stand_id = ?', params: [id] },
-      { sql: "UPDATE stands SET label = '', notes = '', updated_at = ?, updated_by = ? WHERE id = ?", params: [now, auth.email, id] },
+    await Promise.all([
+      queryD1('DELETE FROM checklist_items WHERE stand_id = ?', [id]),
+      queryD1('DELETE FROM materials WHERE stand_id = ?', [id]),
+      queryD1('DELETE FROM team_members WHERE stand_id = ?', [id]),
+      queryD1('DELETE FROM occurrences WHERE stand_id = ?', [id]),
+      queryD1('DELETE FROM photos WHERE stand_id = ?', [id]),
+      queryD1('DELETE FROM files WHERE stand_id = ?', [id]),
+      queryD1('DELETE FROM drive_links WHERE stand_id = ?', [id]),
     ])
+    await queryD1(
+      "UPDATE stands SET label = '', notes = '', updated_at = ?, updated_by = ? WHERE id = ?",
+      [now, auth.email, id]
+    )
 
     return Response.json({ success: true })
   } catch (error) {

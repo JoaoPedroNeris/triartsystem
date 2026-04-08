@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import { queryD1, queryD1Batch } from '@/lib/cloudflare/d1'
+import { queryD1 } from '@/lib/cloudflare/d1'
 import { getAuthFromCookies } from '@/lib/auth'
 import { DEFAULT_CHECKLIST_ITEMS } from '@/data/defaultChecklist'
 
@@ -26,18 +26,18 @@ export async function GET(
 
     // Lazy init: if no items exist, insert defaults
     if (items.length === 0) {
-      const statements: { sql: string; params: string[] }[] = []
-
+      const rows: string[][] = []
+      const placeholders: string[] = []
       for (const [category, labels] of Object.entries(DEFAULT_CHECKLIST_ITEMS)) {
         for (const label of labels) {
-          statements.push({
-            sql: 'INSERT INTO checklist_items (stand_id, category, label, checked) VALUES (?, ?, ?, 0)',
-            params: [standId, category, label],
-          })
+          placeholders.push('(?, ?, ?, 0)')
+          rows.push([standId, category, label])
         }
       }
-
-      await queryD1Batch(statements)
+      await queryD1(
+        `INSERT INTO checklist_items (stand_id, category, label, checked) VALUES ${placeholders.join(', ')}`,
+        rows.flat()
+      )
 
       // Re-fetch after insert
       items = await queryD1<{ id: number; category: string; label: string; checked: number; checked_at: string | null; checked_by: string | null }>(
