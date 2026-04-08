@@ -27,7 +27,7 @@ export function InteractiveMap({ stands, selectedStandId, onStandClick }: Intera
           wrapperStyle={{ width: "100%", height: "100%" }}
           contentStyle={{ width: "fit-content", height: "fit-content" }}
         >
-          <div className="relative" style={{ pointerEvents: "auto" }}>
+          <div className="relative inline-block" style={{ pointerEvents: "auto" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/map.png"

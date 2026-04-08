@@ -35,7 +35,7 @@ export function getStatusColor(status: StandStatus): string {
     case "red": return "rgba(239, 68, 68, 0.4)";
     case "yellow": return "rgba(234, 179, 8, 0.4)";
     case "green": return "rgba(34, 197, 94, 0.4)";
-    default: return "transparent";
+    default: return "rgba(43, 168, 157, 0.15)";
   }
 }
 
