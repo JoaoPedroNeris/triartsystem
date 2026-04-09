@@ -7,7 +7,7 @@ export function MapControls() {
   const { zoomIn, zoomOut, resetTransform } = useControls();
 
   return (
-    <div className="absolute bottom-6 right-6 z-20 flex flex-col gap-2">
+    <div className="absolute bottom-3 right-3 sm:bottom-6 sm:right-6 z-20 flex flex-col gap-1.5 sm:gap-2">
       <button
         onClick={() => zoomIn()}
         className="w-10 h-10 glass rounded-xl shadow-lg border border-black/5 flex items-center justify-center hover:bg-white transition-apple"

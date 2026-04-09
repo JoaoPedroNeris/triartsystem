@@ -125,19 +125,19 @@ export function StandModal({ standId, onClose }: StandModalProps) {
     <Dialog.Root open={standId !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
-        <Dialog.Popup className="fixed inset-4 z-50 mx-auto my-auto flex max-w-[1100px] max-h-[92vh] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.97]">
+        <Dialog.Popup className="fixed inset-0 sm:inset-4 z-50 mx-auto my-auto flex max-w-[1100px] max-h-[100dvh] sm:max-h-[92vh] flex-col overflow-hidden rounded-none sm:rounded-2xl bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.97]">
 
           {/* ── Header ── */}
-          <div className="relative shrink-0 border-b border-neutral-100 bg-neutral-50/80 px-7 py-5">
+          <div className="relative shrink-0 border-b border-neutral-100 bg-neutral-50/80 px-4 py-3 sm:px-7 sm:py-5">
             {/* Close */}
             <Dialog.Close className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-apple">
               <X className="w-4 h-4" />
             </Dialog.Close>
 
-            <div className="flex items-center gap-5 pr-10">
+            <div className="flex items-center gap-3 sm:gap-5 pr-10">
               {/* Progress ring */}
-              <div className="relative w-14 h-14 shrink-0">
-                <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+              <div className="relative w-10 h-10 sm:w-14 sm:h-14 shrink-0">
+                <svg className="w-10 h-10 sm:w-14 sm:h-14 -rotate-90" viewBox="0 0 56 56">
                   <circle cx="28" cy="28" r="24" fill="none" stroke="#e5e5e5" strokeWidth="3" />
                   <circle
                     cx="28" cy="28" r="24"
@@ -148,7 +148,7 @@ export function StandModal({ standId, onClose }: StandModalProps) {
                     className={cn("transition-all duration-700 ease-out", getProgressStroke())}
                   />
                 </svg>
-                <span className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold tracking-tight", getProgressColor())}>
+                <span className={cn("absolute inset-0 flex items-center justify-center text-[11px] sm:text-sm font-bold tracking-tight", getProgressColor())}>
                   {progress}<span className="text-[9px] font-medium">%</span>
                 </span>
               </div>
@@ -165,11 +165,11 @@ export function StandModal({ standId, onClose }: StandModalProps) {
                     onBlur={handleLabelSave}
                     onKeyDown={(e) => e.key === "Enter" && handleLabelSave()}
                     autoFocus
-                    className="mt-0.5 h-9 text-xl font-bold bg-white border border-triart-green/40 rounded-lg w-80 focus-visible:ring-2 focus-visible:ring-triart-green/30"
+                    className="mt-0.5 h-9 text-base sm:text-xl font-bold bg-white border border-triart-green/40 rounded-lg w-full max-w-xs focus-visible:ring-2 focus-visible:ring-triart-green/30"
                   />
                 ) : (
                   <h2 className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xl font-bold text-neutral-900 tracking-tight truncate">
+                    <span className="text-base sm:text-xl font-bold text-neutral-900 tracking-tight truncate">
                       {loading ? "Carregando..." : stand?.label || `Stand ${standId}`}
                     </span>
                     {!readOnly && !loading && (
@@ -250,8 +250,8 @@ export function StandModal({ standId, onClose }: StandModalProps) {
               </nav>
 
               {/* ── Mobile tabs ── */}
-              <div className="flex md:hidden shrink-0 overflow-x-auto border-b border-neutral-100 bg-neutral-50/50 px-2 py-2 gap-1 scrollbar-none absolute top-[var(--header-h)] left-0 right-0 z-10"
-                style={{ "--header-h": "auto" } as React.CSSProperties}
+              <div className="flex md:hidden shrink-0 overflow-x-auto border-b border-neutral-100 bg-neutral-50/50 px-2 py-2 gap-1"
+                style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" } as React.CSSProperties}
               >
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
@@ -276,7 +276,7 @@ export function StandModal({ standId, onClose }: StandModalProps) {
 
               {/* ── Content ── */}
               <div className="flex-1 min-w-0 overflow-y-auto">
-                <div className="p-7">
+                <div className="p-4 sm:p-7">
                   {activeTab === "notas" && (
                     <StandNotes notes={stand.notes} readOnly={readOnly} onSave={handleSaveNotes} />
                   )}

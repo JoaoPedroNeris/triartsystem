@@ -15,9 +15,9 @@ export function OverallProgress({ progress, totalStands, completedStands }: Over
   ];
 
   return (
-    <div className="flex flex-col items-center p-6 bg-white rounded-2xl border border-black/5 shadow-sm">
-      <h3 className="text-sm font-medium text-triart-gray mb-4">Progresso da Feira</h3>
-      <div className="relative w-40 h-40">
+    <div className="flex flex-col items-center p-4 sm:p-6 bg-white rounded-2xl border border-black/5 shadow-sm">
+      <h3 className="text-sm font-medium text-triart-gray mb-3 sm:mb-4">Progresso da Feira</h3>
+      <div className="relative w-28 h-28 sm:w-40 sm:h-40">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -37,7 +37,7 @@ export function OverallProgress({ progress, totalStands, completedStands }: Over
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold text-triart-black">{progress}%</span>
+          <span className="text-2xl sm:text-3xl font-bold text-triart-black">{progress}%</span>
         </div>
       </div>
       <div className="flex items-center gap-4 mt-4 text-sm">

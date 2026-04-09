@@ -84,7 +84,7 @@ function EventoContent() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="sticky top-16 z-40 glass border-b border-black/5">
-        <div className="flex items-center justify-between gap-4 px-4 md:px-6 py-3 max-w-[1920px] mx-auto">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4 md:px-6 py-2 sm:py-3 max-w-[1920px] mx-auto">
           <StandSearch stands={stands} onSelect={handleStandClick} />
           <ViewToggle view={view} onChange={handleViewChange} />
           {role !== "visitante" && view === "dashboard" && (
@@ -95,7 +95,7 @@ function EventoContent() {
 
       {view === "mapa" ? (
         <div className="flex-1 p-4 md:p-6">
-          <div className="h-[calc(100vh-180px)] max-w-[1920px] mx-auto">
+          <div className="h-[calc(100dvh-140px)] sm:h-[calc(100vh-180px)] max-w-[1920px] mx-auto">
             <InteractiveMap
               stands={stands}
               selectedStandId={selectedStandId}
@@ -104,14 +104,14 @@ function EventoContent() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 p-4 md:p-6 max-w-[1920px] mx-auto w-full space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="flex-1 p-3 sm:p-4 md:p-6 max-w-[1920px] mx-auto w-full space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 sm:gap-4">
             <OverallProgress
               progress={avgProgress}
               totalStands={stands.length}
               completedStands={completedStands}
             />
-            <div className="md:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="md:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               <CategoryChart label="Eletrica" icon={Zap} progress={avgEletrica} />
               <CategoryChart label="Marcenaria" icon={Hammer} progress={avgMarcenaria} />
               <CategoryChart label="Tapecaria" icon={Sofa} progress={avgTapecaria} />

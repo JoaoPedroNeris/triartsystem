@@ -15,8 +15,8 @@ export function CategoryChart({ label, icon: Icon, progress }: CategoryChartProp
   ];
 
   return (
-    <div className="flex flex-col items-center p-5 bg-white rounded-2xl border border-black/5 shadow-sm">
-      <div className="relative w-28 h-28">
+    <div className="flex flex-col items-center p-3 sm:p-5 bg-white rounded-2xl border border-black/5 shadow-sm">
+      <div className="relative w-20 h-20 sm:w-28 sm:h-28">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -36,7 +36,7 @@ export function CategoryChart({ label, icon: Icon, progress }: CategoryChartProp
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-lg font-bold text-triart-black">{progress}%</span>
+          <span className="text-sm sm:text-lg font-bold text-triart-black">{progress}%</span>
         </div>
       </div>
       <div className="flex items-center gap-1.5 mt-3">

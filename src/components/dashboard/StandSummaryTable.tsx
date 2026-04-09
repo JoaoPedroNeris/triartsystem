@@ -51,14 +51,14 @@ export function StandSummaryTable({ stands, onStandClick }: StandSummaryTablePro
     return 0;
   });
 
-  const columns: { key: SortKey; label: string; className?: string }[] = [
+  const columns: { key: SortKey; label: string; className?: string; hideOnMobile?: boolean }[] = [
     { key: "id", label: "#", className: "w-12" },
     { key: "label", label: "Stand" },
-    { key: "eletrica", label: "Eletrica", className: "w-20 text-center" },
-    { key: "marcenaria", label: "Marcen.", className: "w-20 text-center" },
-    { key: "tapecaria", label: "Tapec.", className: "w-20 text-center" },
-    { key: "comunicacaoVisual", label: "Com.Vis.", className: "w-20 text-center" },
-    { key: "total", label: "Total", className: "w-20 text-center" },
+    { key: "eletrica", label: "Eletrica", className: "w-20 text-center", hideOnMobile: true },
+    { key: "marcenaria", label: "Marcen.", className: "w-20 text-center", hideOnMobile: true },
+    { key: "tapecaria", label: "Tapec.", className: "w-20 text-center", hideOnMobile: true },
+    { key: "comunicacaoVisual", label: "Com.Vis.", className: "w-20 text-center", hideOnMobile: true },
+    { key: "total", label: "Total", className: "w-16 sm:w-20 text-center" },
   ];
 
   return (
@@ -72,8 +72,9 @@ export function StandSummaryTable({ stands, onStandClick }: StandSummaryTablePro
                   key={col.key}
                   onClick={() => handleSort(col.key)}
                   className={cn(
-                    "px-4 py-3 text-left text-xs font-medium text-triart-gray uppercase tracking-wider cursor-pointer hover:text-triart-black transition-colors select-none",
-                    col.className
+                    "px-3 sm:px-4 py-3 text-left text-xs font-medium text-triart-gray uppercase tracking-wider cursor-pointer hover:text-triart-black transition-colors select-none",
+                    col.className,
+                    col.hideOnMobile && "hidden sm:table-cell"
                   )}
                 >
                   {col.label}
@@ -91,11 +92,13 @@ export function StandSummaryTable({ stands, onStandClick }: StandSummaryTablePro
                 onClick={() => onStandClick(row.id)}
                 className="border-b border-black/5 last:border-0 hover:bg-triart-gray-light/50 cursor-pointer transition-apple"
               >
-                <td className="px-4 py-3 text-xs font-medium text-triart-gray">{row.id}</td>
-                <td className="px-4 py-3 font-medium text-triart-black">{row.label}</td>
+                <td className="px-3 sm:px-4 py-3 text-xs font-medium text-triart-gray">{row.id}</td>
+                <td className="px-3 sm:px-4 py-3 font-medium text-triart-black text-sm">{row.label}</td>
                 {(["eletrica", "marcenaria", "tapecaria", "comunicacaoVisual", "total"] as const).map(
-                  (key) => (
-                    <td key={key} className="px-4 py-3 text-center">
+                  (key) => {
+                    const isHidden = key !== "total";
+                    return (
+                    <td key={key} className={cn("px-3 sm:px-4 py-3 text-center", isHidden && "hidden sm:table-cell")}>
                       <span
                         className={cn(
                           "inline-block px-2 py-0.5 rounded-full text-xs font-semibold",
@@ -105,7 +108,8 @@ export function StandSummaryTable({ stands, onStandClick }: StandSummaryTablePro
                         {row[key]}%
                       </span>
                     </td>
-                  )
+                    );
+                  }
                 )}
               </tr>
             ))}
