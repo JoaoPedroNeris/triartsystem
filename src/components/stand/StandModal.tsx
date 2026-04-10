@@ -130,8 +130,8 @@ export function StandModal({ standId, onClose }: StandModalProps) {
           {/* ── Header ── */}
           <div className="relative shrink-0 border-b border-neutral-100 bg-neutral-50/80 px-4 py-3 sm:px-7 sm:py-5">
             {/* Close */}
-            <Dialog.Close className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-apple">
-              <X className="w-4 h-4" />
+            <Dialog.Close className="absolute right-2 top-2 sm:right-4 sm:top-4 flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-apple z-10">
+              <X className="w-5 h-5 sm:w-4 sm:h-4" />
             </Dialog.Close>
 
             <div className="flex items-center gap-3 sm:gap-5 pr-10">
@@ -214,8 +214,8 @@ export function StandModal({ standId, onClose }: StandModalProps) {
               </div>
             </div>
           ) : (
-            <div className="flex flex-1 min-h-0">
-              {/* ── Sidebar ── */}
+            <div className="flex flex-col md:flex-row flex-1 min-h-0">
+              {/* ── Sidebar (desktop) ── */}
               <nav className="hidden md:flex w-52 shrink-0 flex-col border-r border-neutral-100 bg-neutral-50/50 p-3">
                 <div className="flex flex-col gap-0.5">
                   {tabs.map((tab) => {
@@ -250,25 +250,29 @@ export function StandModal({ standId, onClose }: StandModalProps) {
               </nav>
 
               {/* ── Mobile tabs ── */}
-              <div className="flex md:hidden shrink-0 overflow-x-auto border-b border-neutral-100 bg-neutral-50/50 px-2 py-2 gap-1"
-                style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" } as React.CSSProperties}
-              >
+              <div className="flex md:hidden shrink-0 border-b border-neutral-100 bg-neutral-50/80 px-1.5 py-1.5 gap-0.5 justify-around">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.value;
+                  const hasAlert = tab.value === "ocorrencias" && openOccurrences > 0;
                   return (
                     <button
                       key={tab.value}
                       onClick={() => setActiveTab(tab.value)}
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-apple",
+                        "relative flex flex-col items-center justify-center min-w-[40px] px-1.5 py-1.5 rounded-lg text-[10px] font-medium transition-apple",
                         isActive
                           ? "bg-triart-green text-white"
-                          : "text-neutral-500 hover:text-neutral-700 hover:bg-white"
+                          : "text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100"
                       )}
                     >
-                      <Icon className="w-3.5 h-3.5" />
-                      {tab.label}
+                      <Icon className="w-4 h-4" />
+                      <span className="mt-0.5 leading-none truncate max-w-[48px]">{tab.label}</span>
+                      {hasAlert && (
+                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                          {openOccurrences}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
