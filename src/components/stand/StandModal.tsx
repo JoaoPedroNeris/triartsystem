@@ -179,22 +179,22 @@ export function StandModal({ standId, onClose }: StandModalProps) {
                     )}
                   </h2>
                 )}
-                <div className="flex items-center gap-2.5 mt-2">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mt-1.5 sm:mt-2">
                   {openOccurrences > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-[11px] font-semibold text-red-600 ring-1 ring-red-100">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-red-600 ring-1 ring-red-100">
                       <AlertTriangle className="w-3 h-3" />
                       {openOccurrences} alerta{openOccurrences > 1 ? "s" : ""}
                     </span>
                   )}
                   {stand?.updatedBy && (
-                    <span className="text-[11px] text-neutral-400">
+                    <span className="text-[10px] sm:text-[11px] text-neutral-400 hidden sm:inline">
                       Atualizado por <span className="text-neutral-500 font-medium">{stand.updatedBy}</span>
                     </span>
                   )}
                   {!readOnly && !loading && (
                     <button
                       onClick={handleClearStand}
-                      className="ml-auto rounded-lg p-1.5 text-neutral-300 hover:bg-red-50 hover:text-red-500 transition-apple"
+                      className="ml-auto rounded-lg p-2 sm:p-1.5 text-neutral-300 hover:bg-red-50 hover:text-red-500 transition-apple"
                       title="Limpar todos os dados do stand"
                     >
                       <Trash2 className="w-4 h-4" />

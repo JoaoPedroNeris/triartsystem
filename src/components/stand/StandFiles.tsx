@@ -109,16 +109,16 @@ export function StandFiles({
                   href={f.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="shrink-0 w-8 h-8 bg-triart-green/10 rounded-lg flex items-center justify-center hover:bg-triart-green/20 transition-apple"
+                  className="shrink-0 w-10 h-10 sm:w-8 sm:h-8 bg-triart-green/10 rounded-lg flex items-center justify-center hover:bg-triart-green/20 transition-apple"
                 >
                   <Download className="w-4 h-4 text-triart-green" />
                 </a>
                 {!readOnly && (
                   <button
                     onClick={() => handleDeleteFile(f)}
-                    className="shrink-0 text-triart-gray hover:text-red-500 transition-colors"
+                    className="shrink-0 p-1.5 text-triart-gray hover:text-red-500 transition-colors"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                   </button>
                 )}
               </div>
@@ -134,27 +134,29 @@ export function StandFiles({
           Links do Drive
         </h3>
         {!readOnly && (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               value={linkTitle}
               onChange={(e) => setLinkTitle(e.target.value)}
               placeholder="Titulo"
-              className="flex-1 h-9 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
+              className="flex-1 h-11 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
             />
-            <Input
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              placeholder="URL do Drive"
-              className="flex-1 h-9 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
-              onKeyDown={(e) => e.key === "Enter" && handleAddLink()}
-            />
-            <button
-              onClick={handleAddLink}
-              disabled={!linkTitle.trim() || !linkUrl.trim()}
-              className="h-9 w-9 bg-triart-green hover:bg-triart-green-dark text-white rounded-xl flex items-center justify-center shrink-0 transition-apple disabled:opacity-40"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+            <div className="flex gap-2">
+              <Input
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="URL do Drive"
+                className="flex-1 h-11 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
+                onKeyDown={(e) => e.key === "Enter" && handleAddLink()}
+              />
+              <button
+                onClick={handleAddLink}
+                disabled={!linkTitle.trim() || !linkUrl.trim()}
+                className="h-11 w-11 bg-triart-green hover:bg-triart-green-dark text-white rounded-xl flex items-center justify-center shrink-0 transition-apple disabled:opacity-40"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 
@@ -176,9 +178,9 @@ export function StandFiles({
                 {!readOnly && (
                   <button
                     onClick={() => handleRemoveLink(link.id)}
-                    className="shrink-0 text-triart-gray hover:text-red-500 transition-colors"
+                    className="shrink-0 p-1.5 text-triart-gray hover:text-red-500 transition-colors"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                   </button>
                 )}
               </div>

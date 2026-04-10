@@ -68,7 +68,7 @@ export function StandNotes({ notes, readOnly, onSave }: StandNotesProps) {
         onChange={(e) => setValue(e.target.value)}
         readOnly={readOnly}
         placeholder={readOnly ? "Nenhuma nota registrada." : "Digite suas notas aqui..."}
-        className="min-h-[300px] resize-none bg-triart-gray-light/50 border-0 rounded-xl text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-triart-green"
+        className="min-h-[180px] sm:min-h-[300px] resize-none bg-triart-gray-light/50 border-0 rounded-xl text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-triart-green"
       />
     </div>
   );

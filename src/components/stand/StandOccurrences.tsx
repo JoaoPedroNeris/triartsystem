@@ -70,7 +70,7 @@ export function StandOccurrences({ standId, occurrences, readOnly, onRefresh }: 
       {!readOnly && (
         <div>
           {showForm ? (
-            <div className="space-y-3 p-4 bg-triart-gray-light/50 rounded-xl">
+            <div className="space-y-3 p-3 sm:p-4 bg-triart-gray-light/50 rounded-xl">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Nova Ocorrencia</h4>
                 <button onClick={() => setShowForm(false)}>
@@ -95,7 +95,7 @@ export function StandOccurrences({ standId, occurrences, readOnly, onRefresh }: 
                     key={p}
                     onClick={() => setPriority(p)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-medium border transition-apple",
+                      "flex-1 sm:flex-none px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium border transition-apple",
                       priority === p
                         ? priorityConfig[p].color
                         : "bg-white text-triart-gray border-gray-200"
@@ -168,10 +168,10 @@ export function StandOccurrences({ standId, occurrences, readOnly, onRefresh }: 
                 {!readOnly && occ.status === "aberta" && (
                   <button
                     onClick={() => handleResolve(occ.id)}
-                    className="shrink-0 w-8 h-8 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg flex items-center justify-center transition-apple"
+                    className="shrink-0 w-10 h-10 sm:w-8 sm:h-8 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg flex items-center justify-center transition-apple"
                     title="Marcar como resolvida"
                   >
-                    <CheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-5 h-5 sm:w-4 sm:h-4" />
                   </button>
                 )}
               </div>

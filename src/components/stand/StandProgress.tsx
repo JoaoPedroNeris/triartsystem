@@ -28,7 +28,7 @@ function DonutChart({ progress }: { progress: number }) {
   ];
 
   return (
-    <div className="relative w-24 h-24">
+    <div className="relative w-20 h-20 sm:w-24 sm:h-24">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -69,11 +69,11 @@ export function StandProgress({ checklist }: StandProgressProps) {
       </div>
 
       {/* Per-category donuts */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {categories.map(({ key, label, icon: Icon }) => {
           const progress = calculateCategoryProgress(checklist[key]);
           return (
-            <div key={key} className="flex flex-col items-center p-4 bg-white rounded-xl border border-black/5">
+            <div key={key} className="flex flex-col items-center p-3 sm:p-4 bg-white rounded-xl border border-black/5">
               <DonutChart progress={progress} />
               <div className="flex items-center gap-1.5 mt-2">
                 <Icon className="w-3.5 h-3.5 text-triart-green" />

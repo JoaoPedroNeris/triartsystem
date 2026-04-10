@@ -27,10 +27,10 @@ function LoginContent() {
   return (
     <div className="min-h-screen bg-triart-black flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="glass-dark rounded-3xl p-10 shadow-2xl border border-white/10">
+        <div className="glass-dark rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-2xl border border-white/10">
           {/* Logo */}
-          <div className="flex flex-col items-center mb-10">
-            <div className="w-16 h-16 bg-triart-green rounded-2xl flex items-center justify-center mb-4">
+          <div className="flex flex-col items-center mb-6 sm:mb-10">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-triart-green rounded-2xl flex items-center justify-center mb-4">
               <span className="text-white font-bold text-2xl">T</span>
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight">

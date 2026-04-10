@@ -76,9 +76,9 @@ export function StandPhotos({ standId, photos, readOnly, onRefresh }: StandPhoto
                 <button
                   onClick={() => handleDelete(photo)}
                   disabled={deleting === photo.id}
-                  className="absolute top-2 right-2 w-7 h-7 bg-red-500/80 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 w-9 h-9 sm:w-7 sm:h-7 bg-red-500/80 rounded-lg flex items-center justify-center opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-white" />
+                  <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-white" />
                 </button>
               )}
             </div>
@@ -89,12 +89,12 @@ export function StandPhotos({ standId, photos, readOnly, onRefresh }: StandPhoto
       {/* Lightbox */}
       {preview && (
         <div
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 sm:p-6"
           onClick={() => setPreview(null)}
         >
           <button
             onClick={() => setPreview(null)}
-            className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center"
+            className="absolute top-4 right-4 w-11 h-11 sm:w-10 sm:h-10 bg-white/10 rounded-full flex items-center justify-center"
           >
             <X className="w-5 h-5 text-white" />
           </button>

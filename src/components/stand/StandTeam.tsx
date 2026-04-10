@@ -50,13 +50,13 @@ function TeamSection({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Nome do membro"
-            className="flex-1 h-9 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
+            className="flex-1 h-11 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           />
           <button
             onClick={handleAdd}
             disabled={!name.trim()}
-            className="h-9 w-9 bg-triart-green hover:bg-triart-green-dark text-white rounded-xl flex items-center justify-center shrink-0 transition-apple disabled:opacity-40"
+            className="h-11 w-11 sm:h-11 sm:w-11 bg-triart-green hover:bg-triart-green-dark text-white rounded-xl flex items-center justify-center shrink-0 transition-apple disabled:opacity-40"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -70,15 +70,15 @@ function TeamSection({
           members.map((member, i) => (
             <div
               key={i}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-triart-green/10 rounded-full"
+              className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 bg-triart-green/10 rounded-full"
             >
               <span className="text-sm text-triart-green-dark font-medium">{member}</span>
               {!readOnly && (
                 <button
                   onClick={() => onRemove(i)}
-                  className="text-triart-green/60 hover:text-red-500 transition-colors"
+                  className="p-1 text-triart-green/60 hover:text-red-500 transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                 </button>
               )}
             </div>

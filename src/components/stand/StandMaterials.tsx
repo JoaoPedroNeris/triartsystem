@@ -66,30 +66,32 @@ export function StandMaterials({ standId, materials, readOnly, onRefresh }: Stan
       </div>
 
       {!readOnly && (
-        <div className="flex gap-2">
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Nome do material"
-            className="flex-1 h-10 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-          />
-          <Input
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="Qtd"
-            type="number"
-            min={1}
-            className="w-20 h-10 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-          />
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-2 flex-1">
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nome do material"
+              className="flex-1 h-11 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            />
+            <Input
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Qtd"
+              type="number"
+              min={1}
+              className="w-20 h-11 bg-triart-gray-light/50 border-0 rounded-xl text-sm"
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            />
+          </div>
           <Button
             onClick={handleAdd}
             disabled={!name.trim()}
-            size="icon"
-            className="h-10 w-10 bg-triart-green hover:bg-triart-green-dark rounded-xl shrink-0"
+            className="h-11 sm:w-11 bg-triart-green hover:bg-triart-green-dark rounded-xl shrink-0"
           >
             <Plus className="w-4 h-4" />
+            <span className="sm:hidden ml-1">Adicionar</span>
           </Button>
         </div>
       )}
@@ -110,7 +112,7 @@ export function StandMaterials({ standId, materials, readOnly, onRefresh }: Stan
                 onClick={() => !readOnly && handleToggle(mat)}
                 disabled={readOnly}
                 className={cn(
-                  "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-200",
+                  "w-6 h-6 sm:w-5 sm:h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-200",
                   mat.confirmed ? "bg-triart-green border-triart-green" : "border-gray-300",
                   !readOnly && "cursor-pointer"
                 )}
@@ -128,9 +130,9 @@ export function StandMaterials({ standId, materials, readOnly, onRefresh }: Stan
               {!readOnly && (
                 <button
                   onClick={() => handleRemove(mat.id)}
-                  className="text-triart-gray hover:text-red-500 transition-colors"
+                  className="p-1.5 -mr-1.5 text-triart-gray hover:text-red-500 transition-colors"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                 </button>
               )}
             </div>
